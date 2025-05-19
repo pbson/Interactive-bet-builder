@@ -439,6 +439,18 @@ const FootballPitch = () => {
 
   const activeTeam = teams[activeTeamIndex];
 
+  useEffect(() => {
+    if (selectedPlayer) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    // Cleanup function to reset overflow when component unmounts or selectedPlayer changes
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedPlayer]);
+
   // Update player stats and add to bet
   const updatePlayerStats = (playerId: number, stat: StatKey, value: number) => {
     // Find if player belongs to main squad or substitutes
@@ -935,8 +947,9 @@ const FootballPitch = () => {
       {selectedPlayer && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-20 backdrop-blur-sm animate-fadeIn">
           <div 
-            className="bg-gradient-to-b from-gray-800 to-gray-700 rounded-xl w-full max-w-md shadow-2xl transform transition-all animate-slideUp flex flex-col max-h-[90vh] lg:max-h-[80vh]"
+            className="bg-gradient-to-b from-gray-800 to-gray-700 rounded-xl w-full max-w-md shadow-2xl transform transition-all animate-slideUp flex flex-col max-h-[90vh] lg:max-h-[85vh]"
           >
+            {/* Modal Header */}
             <div className="flex justify-between items-center p-5 border-b border-gray-600 flex-shrink-0">
               <h2 className="font-bold text-xl flex items-center">
                 <div 
@@ -955,6 +968,7 @@ const FootballPitch = () => {
               </button>
             </div>
 
+            {/* Scrollable Modal Content */}
             <div className="p-5 overflow-y-auto flex-grow">
               {/* Combined Odds Display */}
               <div className="bg-gradient-to-r from-gray-700 to-gray-600 p-4 rounded-xl mb-5 shadow-inner">
@@ -1225,10 +1239,13 @@ const FootballPitch = () => {
                   </div>
                 </div>
               </div>
+            </div>
 
+            {/* Modal Footer */}
+            <div className="p-5 border-t border-gray-600 flex-shrink-0">
               <button
                 onClick={() => setSelectedPlayer(null)}
-                className="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 font-bold py-3 px-4 rounded-lg mt-5 flex items-center justify-center transition-all shadow-lg transform hover:scale-105 active:scale-95"
+                className="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 font-bold py-3 px-4 rounded-lg flex items-center justify-center transition-all shadow-lg transform hover:scale-105 active:scale-95"
               >
                 <Check size={18} className="mr-2" />
                 Add to Bet Slip
