@@ -435,6 +435,7 @@ const FootballPitch = () => {
   const [stakeAmount, setStakeAmount] = useState("");
   const [modalOdds, setModalOdds] = useState<ModalOdds>({});
   const [totalModalOdds, setTotalModalOdds] = useState<number>(1);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const activeTeam = teams[activeTeamIndex];
 
@@ -690,8 +691,38 @@ const FootballPitch = () => {
     setBetSelections(newBetSelections);
   };
 
+  const handlePlaceBet = () => {
+    if (betSelections.length === 0 || !stakeAmount) return;
+
+    // Simulate API call or bet placement logic here
+    console.log("Bet placed:", {
+      selections: betSelections,
+      stake: stakeAmount,
+      totalOdds: calculateTotalOdds(),
+      returns: calculateReturns(),
+    });
+
+    setShowSuccessMessage(true);
+    setBetSelections([]);
+    setStakeAmount("");
+
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 3000); // Hide message after 3 seconds
+  };
+
   return (
     <div className="bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen text-white">
+      {/* Success Message Toast */}
+      {showSuccessMessage && (
+        <div className="fixed top-5 right-5 bg-green-500 text-white p-4 rounded-lg shadow-xl z-50 animate-fadeIn">
+          <div className="flex items-center">
+            <Check size={24} className="mr-2" />
+            <span>Bet placed successfully! Good luck!</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-4 shadow-lg">
         <div className="container mx-auto flex justify-between items-center">
@@ -891,6 +922,7 @@ const FootballPitch = () => {
                     : "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 shadow-lg hover:shadow-xl hover:scale-105 transform active:scale-95"
                 }`}
                 disabled={betSelections.length === 0}
+                onClick={handlePlaceBet}
               >
                 Place Bet
               </button>
