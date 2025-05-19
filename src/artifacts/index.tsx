@@ -935,9 +935,9 @@ const FootballPitch = () => {
       {selectedPlayer && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-20 backdrop-blur-sm animate-fadeIn">
           <div 
-            className="bg-gradient-to-b from-gray-800 to-gray-700 rounded-xl w-full max-w-md shadow-2xl transform transition-all animate-slideUp"
+            className="bg-gradient-to-b from-gray-800 to-gray-700 rounded-xl w-full max-w-md shadow-2xl transform transition-all animate-slideUp flex flex-col max-h-[90vh] lg:max-h-[80vh]"
           >
-            <div className="flex justify-between items-center p-5 border-b border-gray-600">
+            <div className="flex justify-between items-center p-5 border-b border-gray-600 flex-shrink-0">
               <h2 className="font-bold text-xl flex items-center">
                 <div 
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3 border border-white"
@@ -955,7 +955,7 @@ const FootballPitch = () => {
               </button>
             </div>
 
-            <div className="p-5">
+            <div className="p-5 overflow-y-auto flex-grow">
               {/* Combined Odds Display */}
               <div className="bg-gradient-to-r from-gray-700 to-gray-600 p-4 rounded-xl mb-5 shadow-inner">
                 <div className="flex justify-between items-center">
