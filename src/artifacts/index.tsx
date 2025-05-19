@@ -1,9 +1,78 @@
 import React, { useState, useEffect } from "react";
-import { X, ArrowRight, Plus, Minus, Check, Trophy, Repeat, Trash2, AlertCircle } from "lucide-react";
+import { X, Plus, Minus, Check, Trophy, Repeat, Trash2, AlertCircle } from "lucide-react";
+
+interface PlayerPosition {
+  top: string;
+  left: string;
+}
+
+interface Player {
+  id: number;
+  number: number;
+  name: string;
+  position: PlayerPosition;
+  goals: number;
+  assists: number;
+  shots: number;
+  yellowCards: number;
+  redCards: number;
+  performanceHistory: {
+    matchesPlayed: number;
+    seasonGoals: number;
+    seasonAssists: number;
+    bettingHighlight: string;
+  };
+}
+
+interface SubstitutePlayer {
+  id: number;
+  number: number;
+  name: string;
+  position: string; // GK, DEF, MID, FWD
+  goals: number;
+  assists: number;
+  shots: number;
+  yellowCards: number;
+  redCards: number;
+  performanceHistory: {
+    matchesPlayed: number;
+    seasonGoals: number;
+    seasonAssists: number;
+    bettingHighlight: string;
+  };
+}
+
+interface Team {
+  id: string;
+  name: string;
+  color: string;
+  players: Player[];
+  substitutes: SubstitutePlayer[];
+}
+
+type StatKey = "goals" | "assists" | "shots" | "yellowCards" | "redCards";
+
+interface BetSelection {
+  playerId: number;
+  teamId: string;
+  playerName: string;
+  playerNumber: number;
+  stat: StatKey;
+  value: number;
+  odds: string;
+}
+
+interface ModalOdds {
+  goals?: number;
+  assists?: number;
+  shots?: number;
+  yellowCards?: number;
+  redCards?: number;
+}
 
 const FootballPitch = () => {
   // Basic team data
-  const [teams, setTeams] = useState([
+  const [teams, setTeams] = useState<Team[]>([
     {
       id: "home",
       name: "Team A",
@@ -19,6 +88,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 120, seasonGoals: 0, seasonAssists: 2, bettingHighlight: "Penalty Save Expert" },
         },
         {
           id: 2,
@@ -30,6 +100,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 150, seasonGoals: 2, seasonAssists: 5, bettingHighlight: "Crossing Specialist" },
         },
         {
           id: 3,
@@ -41,6 +112,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 180, seasonGoals: 3, seasonAssists: 1, bettingHighlight: "Aerial Threat on Set Pieces" },
         },
         {
           id: 4,
@@ -52,6 +124,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 170, seasonGoals: 2, seasonAssists: 0, bettingHighlight: "Solid Tackler" },
         },
         {
           id: 5,
@@ -63,6 +136,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 160, seasonGoals: 1, seasonAssists: 6, bettingHighlight: "Overlapping Runs" },
         },
         {
           id: 6,
@@ -74,6 +148,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 200, seasonGoals: 5, seasonAssists: 10, bettingHighlight: "Midfield Engine" },
         },
         {
           id: 7,
@@ -85,6 +160,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 130, seasonGoals: 8, seasonAssists: 7, bettingHighlight: "Pacey Winger" },
         },
         {
           id: 8,
@@ -96,6 +172,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 220, seasonGoals: 12, seasonAssists: 15, bettingHighlight: "Creative Playmaker" },
         },
         {
           id: 9,
@@ -107,6 +184,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 140, seasonGoals: 7, seasonAssists: 9, bettingHighlight: "Dribbling Ace" },
         },
         {
           id: 10,
@@ -118,6 +196,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 190, seasonGoals: 20, seasonAssists: 5, bettingHighlight: "Clinical Finisher" },
         },
         {
           id: 11,
@@ -129,6 +208,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 185, seasonGoals: 18, seasonAssists: 6, bettingHighlight: "Poacher" },
         },
       ],
       substitutes: [
@@ -142,6 +222,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 30, seasonGoals: 0, seasonAssists: 0, bettingHighlight: "Good Shot Stopper" },
         },
         {
           id: 13,
@@ -153,6 +234,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 40, seasonGoals: 1, seasonAssists: 1, bettingHighlight: "Versatile Defender" },
         },
         {
           id: 14,
@@ -164,6 +246,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 50, seasonGoals: 2, seasonAssists: 3, bettingHighlight: "Impact Sub" },
         },
       ],
     },
@@ -182,6 +265,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 110, seasonGoals: 0, seasonAssists: 1, bettingHighlight: "Commanding Presence" },
         },
         {
           id: 2,
@@ -193,6 +277,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 140, seasonGoals: 1, seasonAssists: 4, bettingHighlight: "Tenacious Defender" },
         },
         {
           id: 3,
@@ -204,6 +289,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 175, seasonGoals: 2, seasonAssists: 0, bettingHighlight: "Strong in the Air" },
         },
         {
           id: 4,
@@ -215,6 +301,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 165, seasonGoals: 1, seasonAssists: 1, bettingHighlight: "Good Reading of Game" },
         },
         {
           id: 5,
@@ -226,6 +313,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 155, seasonGoals: 0, seasonAssists: 5, bettingHighlight: "Attacking Fullback" },
         },
         {
           id: 6,
@@ -237,6 +325,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 190, seasonGoals: 4, seasonAssists: 8, bettingHighlight: "Box-to-Box Midfielder" },
         },
         {
           id: 7,
@@ -248,6 +337,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 125, seasonGoals: 6, seasonAssists: 6, bettingHighlight: "Tricky Winger" },
         },
         {
           id: 8,
@@ -259,6 +349,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 210, seasonGoals: 10, seasonAssists: 12, bettingHighlight: "Visionary Passer" },
         },
         {
           id: 9,
@@ -270,6 +361,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 135, seasonGoals: 5, seasonAssists: 7, bettingHighlight: "Known for Long Shots" },
         },
         {
           id: 10,
@@ -281,6 +373,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 180, seasonGoals: 22, seasonAssists: 4, bettingHighlight: "Goal Machine" },
         },
         {
           id: 11,
@@ -292,6 +385,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 175, seasonGoals: 19, seasonAssists: 7, bettingHighlight: "Consistent Scorer" },
         },
       ],
       substitutes: [
@@ -305,6 +399,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 25, seasonGoals: 0, seasonAssists: 0, bettingHighlight: "Reliable Backup" },
         },
         {
           id: 13,
@@ -316,6 +411,7 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 35, seasonGoals: 0, seasonAssists: 1, bettingHighlight: "Solid Defensive Option" },
         },
         {
           id: 14,
@@ -327,24 +423,25 @@ const FootballPitch = () => {
           shots: 0,
           yellowCards: 0,
           redCards: 0,
+          performanceHistory: { matchesPlayed: 45, seasonGoals: 1, seasonAssists: 2, bettingHighlight: "Energetic Midfielder" },
         },
       ],
     },
   ]);
 
   const [activeTeamIndex, setActiveTeamIndex] = useState(0);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
-  const [betSelections, setBetSelections] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | SubstitutePlayer | null>(null);
+  const [betSelections, setBetSelections] = useState<BetSelection[]>([]);
   const [stakeAmount, setStakeAmount] = useState("");
-  const [modalOdds, setModalOdds] = useState({});
-  const [totalModalOdds, setTotalModalOdds] = useState(1);
+  const [modalOdds, setModalOdds] = useState<ModalOdds>({});
+  const [totalModalOdds, setTotalModalOdds] = useState<number>(1);
 
   const activeTeam = teams[activeTeamIndex];
 
   // Update player stats and add to bet
-  const updatePlayerStats = (playerId, stat, value) => {
+  const updatePlayerStats = (playerId: number, stat: StatKey, value: number) => {
     // Find if player belongs to main squad or substitutes
-    let player;
+    let player: Player | SubstitutePlayer | undefined;
     let isSubstitute = false;
 
     let playerIndex = activeTeam.players.findIndex((p) => p.id === playerId);
@@ -362,10 +459,14 @@ const FootballPitch = () => {
 
     // Update the team state
     const newTeams = [...teams];
+    const teamToUpdate = newTeams[activeTeamIndex];
+    
     if (isSubstitute) {
-      newTeams[activeTeamIndex].substitutes[playerIndex][stat] = value;
+      const sub = teamToUpdate.substitutes[playerIndex] as SubstitutePlayer;
+      sub[stat] = value;
     } else {
-      newTeams[activeTeamIndex].players[playerIndex][stat] = value;
+      const mainPlayer = teamToUpdate.players[playerIndex] as Player;
+      mainPlayer[stat] = value;
     }
     setTeams(newTeams);
 
@@ -390,7 +491,7 @@ const FootballPitch = () => {
         // Update existing bet
         const newBets = [...betSelections];
         newBets[existingBetIndex].value = value;
-        newBets[existingBetIndex].odds = oddValue;
+        newBets[existingBetIndex].odds = oddValue.toString();
         setBetSelections(newBets);
       } else {
         // Add new bet
@@ -403,7 +504,7 @@ const FootballPitch = () => {
             playerNumber: player.number,
             stat,
             value,
-            odds: oddValue,
+            odds: oddValue.toString(),
           },
         ]);
       }
@@ -423,10 +524,10 @@ const FootballPitch = () => {
   };
 
   // Generate random odds based on stat and value
-  const getRandomOdds = (stat, value) => {
-    if (value === 0) return 0;
+  const getRandomOdds = (stat: StatKey, value: number): string => {
+    if (value === 0) return "0";
 
-    const baseOdds = {
+    const baseOdds: Record<StatKey, number> = {
       goals: 3.5,
       assists: 4.2,
       shots: 1.8,
@@ -439,17 +540,19 @@ const FootballPitch = () => {
   };
 
   // Calculate total odds
-  const calculateTotalOdds = () => {
-    if (betSelections.length === 0) return 0;
+  const calculateTotalOdds = (): string => {
+    if (betSelections.length === 0) return "0.00";
     return betSelections
       .reduce((acc, bet) => acc * parseFloat(bet.odds), 1)
       .toFixed(2);
   };
 
   // Calculate potential returns
-  const calculateReturns = () => {
+  const calculateReturns = (): string => {
     if (!stakeAmount) return "0.00";
-    return (parseFloat(stakeAmount) * calculateTotalOdds()).toFixed(2);
+    const totalOdds = parseFloat(calculateTotalOdds());
+    if (isNaN(totalOdds)) return "0.00";
+    return (parseFloat(stakeAmount) * totalOdds).toFixed(2);
   };
 
   // Switch active team
@@ -459,7 +562,7 @@ const FootballPitch = () => {
   };
 
   // Format stat name for display
-  const formatStatName = (stat) => {
+  const formatStatName = (stat: StatKey): string => {
     switch (stat) {
       case "goals":
         return "Goals";
@@ -479,7 +582,7 @@ const FootballPitch = () => {
   // Set up modal odds when a player is selected
   useEffect(() => {
     if (selectedPlayer) {
-      const odds = {
+      const odds: ModalOdds = {
         goals:
           selectedPlayer.goals > 0
             ? parseFloat(getRandomOdds("goals", selectedPlayer.goals))
@@ -508,11 +611,11 @@ const FootballPitch = () => {
 
       // Calculate total modal odds
       let total = 1;
-      Object.values(odds).forEach((odd) => {
-        if (odd > 0) total *= odd;
+      Object.values(odds).forEach((oddValue) => {
+        if (oddValue && oddValue > 0) total *= oddValue;
       });
 
-      setTotalModalOdds(total > 1 ? total.toFixed(2) : 1);
+      setTotalModalOdds(total > 1 ? parseFloat(total.toFixed(2)) : 1);
     }
   }, [selectedPlayer]);
 
@@ -520,16 +623,16 @@ const FootballPitch = () => {
   useEffect(() => {
     if (Object.keys(modalOdds).length > 0) {
       let total = 1;
-      Object.values(modalOdds).forEach((odd) => {
-        if (odd > 0) total *= odd;
+      Object.values(modalOdds).forEach((oddValue) => {
+        if (oddValue && oddValue > 0) total *= oddValue;
       });
 
-      setTotalModalOdds(total > 1 ? total.toFixed(2) : 1);
+      setTotalModalOdds(total > 1 ? parseFloat(total.toFixed(2)) : 1);
     }
   }, [modalOdds]);
 
   // Remove bet from bet slip
-  const removeBet = (index) => {
+  const removeBet = (index: number) => {
     const betToRemove = betSelections[index];
     
     // Find the player in teams array
@@ -537,22 +640,24 @@ const FootballPitch = () => {
     if (playerTeamIndex === -1) return;
     
     // Find if player is in main squad or substitutes
-    let player;
+    let player: Player | SubstitutePlayer | undefined;
     let isSubstitute = false;
-    let playerIndex = -1;
+    let playerIdx = -1; // Renamed from playerIndex to avoid conflict
     
-    playerIndex = teams[playerTeamIndex].players.findIndex(
+    const teamToUpdate = teams[playerTeamIndex];
+
+    playerIdx = teamToUpdate.players.findIndex(
       (p) => p.id === betToRemove.playerId
     );
     
-    if (playerIndex !== -1) {
-      player = teams[playerTeamIndex].players[playerIndex];
+    if (playerIdx !== -1) {
+      player = teamToUpdate.players[playerIdx];
     } else {
-      playerIndex = teams[playerTeamIndex].substitutes.findIndex(
+      playerIdx = teamToUpdate.substitutes.findIndex(
         (p) => p.id === betToRemove.playerId
       );
-      if (playerIndex !== -1) {
-        player = teams[playerTeamIndex].substitutes[playerIndex];
+      if (playerIdx !== -1) {
+        player = teamToUpdate.substitutes[playerIdx];
         isSubstitute = true;
       }
     }
@@ -561,10 +666,13 @@ const FootballPitch = () => {
 
     // Update the team state - set the stat to 0
     const newTeams = [...teams];
+    const targetTeam = newTeams[playerTeamIndex];
     if (isSubstitute) {
-      newTeams[playerTeamIndex].substitutes[playerIndex][betToRemove.stat] = 0;
+      const sub = targetTeam.substitutes[playerIdx] as SubstitutePlayer;
+      sub[betToRemove.stat] = 0;
     } else {
-      newTeams[playerTeamIndex].players[playerIndex][betToRemove.stat] = 0;
+      const mainPlayer = targetTeam.players[playerIdx] as Player;
+      mainPlayer[betToRemove.stat] = 0;
     }
     setTeams(newTeams);
     
@@ -825,6 +933,30 @@ const FootballPitch = () => {
                   </span>
                 </div>
               </div>
+
+              {/* Player Performance History */}
+              {selectedPlayer.performanceHistory && (
+                <div className="bg-gray-700 bg-opacity-50 p-4 rounded-lg mb-5 shadow-inner">
+                  <h3 className="text-md font-semibold mb-3 text-yellow-400 text-center">Player Insights</h3>
+                  <div className="text-center mb-3">
+                    <p className="text-lg font-semibold text-white">{selectedPlayer.performanceHistory.bettingHighlight}</p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm border-t border-gray-600 pt-3">
+                    <div className="text-center">
+                      <div className="font-bold text-lg">{selectedPlayer.performanceHistory.matchesPlayed}</div>
+                      <div className="text-gray-400">Matches</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold text-lg">{selectedPlayer.performanceHistory.seasonGoals}</div>
+                      <div className="text-gray-400">Season Goals</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-bold text-lg">{selectedPlayer.performanceHistory.seasonAssists}</div>
+                      <div className="text-gray-400">Season Assists</div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Stats Controls */}
               <div className="space-y-5">
