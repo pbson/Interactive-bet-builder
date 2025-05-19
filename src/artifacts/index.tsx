@@ -776,36 +776,38 @@ const FootballPitch = () => {
               <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l border-dashed border-white opacity-80"></div>
 
               {/* Players on Pitch */}
-              {activeTeam.players.map((player) => (
-                <div
-                  key={player.id}
-                  className="absolute cursor-pointer transition-transform hover:scale-110"
-                  style={{
-                    top: player.position.top,
-                    left: player.position.left,
-                    transform: "translate(-50%, -50%)",
-                  }}
-                  onClick={() => setSelectedPlayer(player)}
-                >
+              {activeTeam.players.map((player) => {
+                const hasActiveBet = betSelections.some(bet => bet.playerId === player.id && bet.teamId === activeTeam.id);
+                return (
                   <div
-                    className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white shadow-lg transition-all hover:ring-3 hover:ring-yellow-300"
-                    style={{ 
-                      backgroundColor: activeTeam.color,
-                      boxShadow: "0 0 10px rgba(255, 255, 255, 0.3)"
+                    key={player.id}
+                    className="absolute cursor-pointer transition-transform hover:scale-110"
+                    style={{
+                      top: player.position.top,
+                      left: player.position.left,
+                      transform: "translate(-50%, -50%)",
                     }}
+                    onClick={() => setSelectedPlayer(player)}
                   >
-                    {player.number}
-                    {player.goals > 0 && (
-                      <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs text-black font-bold shadow-md border border-white animate-bounce">
-                        {player.goals}
-                      </div>
-                    )}
+                    <div
+                      className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all ${hasActiveBet ? 'ring-4 ring-yellow-400 hover:ring-yellow-500' : 'ring-2 ring-white hover:ring-gray-300'}`}
+                      style={{ 
+                        backgroundColor: activeTeam.color,
+                      }}
+                    >
+                      {player.number}
+                      {player.goals > 0 && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-xs text-black font-bold shadow-md border border-white animate-bounce">
+                          {player.goals}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-sm text-center bg-black bg-opacity-70 text-white rounded-full mt-1 px-2 py-0.5 font-medium">
+                      {player.name}
+                    </div>
                   </div>
-                  <div className="text-sm text-center bg-black bg-opacity-70 text-white rounded-full mt-1 px-2 py-0.5 font-medium">
-                    {player.name}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Substitutes */}
@@ -817,25 +819,27 @@ const FootballPitch = () => {
                 </span>
               </h2>
               <div className="flex space-x-5 overflow-x-auto py-2 px-1">
-                {activeTeam.substitutes.map((sub) => (
-                  <div
-                    key={sub.id}
-                    className="flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
-                    onClick={() => setSelectedPlayer(sub)}
-                  >
+                {activeTeam.substitutes.map((sub) => {
+                  const hasActiveBetOnSub = betSelections.some(bet => bet.playerId === sub.id && bet.teamId === activeTeam.id);
+                  return (
                     <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all hover:ring-2 hover:ring-yellow-300"
-                      style={{ 
-                        backgroundColor: activeTeam.color,
-                        boxShadow: "0 0 8px rgba(255, 255, 255, 0.2)"
-                      }}
+                      key={sub.id}
+                      className="flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+                      onClick={() => setSelectedPlayer(sub)}
                     >
-                      {sub.number}
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-all hover:ring-2 hover:ring-yellow-300 ${hasActiveBetOnSub ? 'ring-4 ring-offset-2 ring-offset-gray-700 ring-yellow-400' : 'ring-2 ring-gray-500'}`}
+                        style={{ 
+                          backgroundColor: activeTeam.color,
+                        }}
+                      >
+                        {sub.number}
+                      </div>
+                      <div className="text-xs text-center mt-2 font-medium">{sub.name}</div>
+                      <div className="text-xs text-center text-gray-400">{sub.position}</div>
                     </div>
-                    <div className="text-xs text-center mt-2 font-medium">{sub.name}</div>
-                    <div className="text-xs text-center text-gray-400">{sub.position}</div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -864,39 +868,68 @@ const FootballPitch = () => {
               </div>
             ) : (
               <div className="max-h-[28rem] overflow-y-auto mb-4 space-y-3 pr-1">
-                {betSelections.map((bet, index) => (
-                  <div 
-                    key={index} 
-                    className="bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg p-3 shadow-md transition-all hover:shadow-lg hover:from-gray-600 hover:to-gray-500 animate-fadeIn"
-                  >
-                    <div className="flex justify-between mb-2">
-                      <div className="font-semibold flex items-center">
+                {(() => {
+                  const groupedBets = betSelections.reduce((acc, bet) => {
+                    const groupKey = `${bet.teamId}_${bet.playerId}`;
+                    if (!acc[groupKey]) {
+                      const team = teams.find(t => t.id === bet.teamId);
+                      acc[groupKey] = {
+                        playerId: bet.playerId,
+                        teamId: bet.teamId,
+                        playerName: bet.playerName,
+                        playerNumber: bet.playerNumber,
+                        teamColor: team?.color || '#ccc',
+                        teamName: team?.name || 'Unknown Team',
+                        bets: [],
+                      };
+                    }
+                    acc[groupKey].bets.push({
+                      stat: bet.stat,
+                      value: bet.value,
+                      odds: bet.odds,
+                      originalIndex: betSelections.indexOf(bet) // Important for removal
+                    });
+                    return acc;
+                  }, {} as Record<string, { playerId: number, teamId: string, playerName: string, playerNumber: number, teamColor: string, teamName: string, bets: Array<{ stat: StatKey, value: number, odds: string, originalIndex: number }> }>);
+
+                  return Object.values(groupedBets).map((playerGroup) => (
+                    <div 
+                      key={`${playerGroup.teamId}_${playerGroup.playerId}`}
+                      className="bg-gradient-to-r from-gray-700 to-gray-600 rounded-lg p-3 shadow-md transition-all hover:shadow-lg animate-fadeIn mb-4"
+                    >
+                      <div className="flex items-center mb-2 pb-2 border-b border-gray-500">
                         <div 
-                          className="w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 border border-white"
-                          style={{ backgroundColor: teams.find(t => t.id === bet.teamId)?.color }}
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-xs mr-2 border-2 border-white flex-shrink-0"
+                          style={{ backgroundColor: playerGroup.teamColor }}
                         >
-                          {bet.playerNumber}
+                          {playerGroup.playerNumber}
                         </div>
-                        {bet.playerName}
+                        <div className="flex-grow">
+                          <div className="font-semibold text-white">{playerGroup.playerName}</div>
+                          <div className="text-xs text-yellow-400">{playerGroup.teamName}</div>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <div className="text-green-400 font-bold text-lg mr-2">{bet.odds}</div>
-                        <button 
-                          onClick={() => removeBet(index)}
-                          className="text-gray-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-gray-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                      <div className="space-y-2">
+                        {playerGroup.bets.map((betItem) => (
+                          <div key={betItem.stat} className="flex justify-between items-center bg-gray-600 bg-opacity-50 p-2 rounded">
+                            <div>
+                              <span className="text-sm font-medium text-gray-200">{formatStatName(betItem.stat)}: {betItem.value}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-green-400 font-bold text-md mr-3">{betItem.odds}</span>
+                              <button 
+                                onClick={() => removeBet(betItem.originalIndex)}
+                                className="text-gray-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-gray-700"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-300 flex justify-between">
-                      <span>{formatStatName(bet.stat)}: {bet.value}</span>
-                      <span className="text-yellow-400">
-                        {bet.teamId === "home" ? "Team A" : "Team B"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             )}
 
